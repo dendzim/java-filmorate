@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import jakarta.validation.ValidationException;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -70,6 +70,16 @@ public class FilmController {
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.warn("Ошибка даты");
             throw new ValidationException("Неверная дата релиза");
+        }
+
+        if (film.getName() == null || film.getName().isBlank()) {
+            log.warn("Пустое название фильма");
+            throw new ValidationException("Название не может быть пустым");
+        }
+
+        if (film.getDuration() < 1) {
+            log.warn("Ошибка длительности");
+            throw new ValidationException("Длительность не может быть меньше 1");
         }
     }
 }

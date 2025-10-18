@@ -50,12 +50,6 @@ public class UserController {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
             userValidation(newUser);
-            for (User usr : users.values()) {
-                if (usr.getEmail().equals(newUser.getEmail())) {
-                    log.warn("Попытка присвоить почту существующего пользователя");
-                    throw new ValidationException("Этот Email уже используется");
-                }
-            }
             oldUser.setEmail(newUser.getEmail());
             oldUser.setName(newUser.getName());
             oldUser.setLogin(newUser.getLogin());
