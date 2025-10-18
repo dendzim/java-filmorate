@@ -20,6 +20,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
+        log.info("Список фильмов выведен");
         return films.values();
     }
 
@@ -44,6 +45,7 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
+            log.warn("Не указан id");
             throw new ValidationException("Id должен быть указан");
         }
         if (films.containsKey(newFilm.getId())) {
@@ -53,18 +55,20 @@ public class FilmController {
             oldFilm.setDuration(newFilm.getDuration());
             oldFilm.setName(newFilm.getName());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
+            log.info("Данные о фильме: {} обновлены", oldFilm);
             return oldFilm;
         }
-        throw new ValidationException("Пост с id = " + newFilm.getId() + " не найден");
+        log.warn("Фильм с указанным id не найден");
+        throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
     private void filmValidation(Film film) {
         if (film.getDescription().length() > 200) {
-            log.error("Ошибка лимита");
+            log.warn("Ошибка лимита");
             throw new ValidationException("Описание превышает 200 символов");
         }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.error("Ошибка даты");
+            log.warn("Ошибка даты");
             throw new ValidationException("Неверная дата релиза");
         }
     }
