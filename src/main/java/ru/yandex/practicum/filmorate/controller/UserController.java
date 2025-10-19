@@ -34,7 +34,7 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
-        userValidation(user);
+        validateUser(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Пользователь: {} добавлен в базу", user);
@@ -47,21 +47,21 @@ public class UserController {
             log.warn("Не указан id");
             throw new ValidationException("Id должен быть указан");
         }
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            userValidation(newUser);
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setName(newUser.getName());
-            oldUser.setLogin(newUser.getLogin());
-            oldUser.setBirthday(newUser.getBirthday());
-            log.info("Данные о пользователе: {} обновлены", oldUser);
-            return oldUser;
+        if (!users.containsKey(newUser.getId())) {
+            log.warn("Пользователь с указанным id не найден");
+            throw new ValidationException("Пользователь с id = " + newUser.getId() + " не найден");
         }
-        log.warn("Пользователь с указанным id не найден");
-        throw new ValidationException("Пользователь с id = " + newUser.getId() + " не найден");
+        validateUser(newUser);
+        User oldUser = users.get(newUser.getId());
+        oldUser.setEmail(newUser.getEmail());
+        oldUser.setName(newUser.getName());
+        oldUser.setLogin(newUser.getLogin());
+        oldUser.setBirthday(newUser.getBirthday());
+        log.info("Данные о пользователе: {} обновлены", oldUser);
+        return oldUser;
     }
 
-    private void userValidation(User user) {
+    private void validateUser(User user) {
         if (!user.getEmail().contains("@")) {
             log.warn("Ошибка в формате почты");
             throw new ValidationException("Неверная почта");

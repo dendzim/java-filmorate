@@ -35,7 +35,7 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        filmValidation(film);
+        validateFilm(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Фильм: {} добавлен в базу", film);
@@ -48,21 +48,21 @@ public class FilmController {
             log.warn("Не указан id");
             throw new ValidationException("Id должен быть указан");
         }
-        if (films.containsKey(newFilm.getId())) {
-            filmValidation(newFilm);
-            Film oldFilm = films.get(newFilm.getId());
-            oldFilm.setDescription(newFilm.getDescription());
-            oldFilm.setDuration(newFilm.getDuration());
-            oldFilm.setName(newFilm.getName());
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.info("Данные о фильме: {} обновлены", oldFilm);
-            return oldFilm;
+        if (!films.containsKey(newFilm.getId())) {
+            log.warn("Фильм с указанным id не найден");
+            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
         }
-        log.warn("Фильм с указанным id не найден");
-        throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
+        validateFilm(newFilm);
+        Film oldFilm = films.get(newFilm.getId());
+        oldFilm.setDescription(newFilm.getDescription());
+        oldFilm.setDuration(newFilm.getDuration());
+        oldFilm.setName(newFilm.getName());
+        oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        log.info("Данные о фильме: {} обновлены", oldFilm);
+        return oldFilm;
     }
 
-    private void filmValidation(Film film) {
+    private void validateFilm(Film film) {
         if (film.getDescription().length() > 200) {
             log.warn("Ошибка лимита");
             throw new ValidationException("Описание превышает 200 символов");
