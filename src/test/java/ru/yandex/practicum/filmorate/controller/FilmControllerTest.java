@@ -3,13 +3,15 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 
 public class FilmControllerTest {
-
-    FilmController filmController = new FilmController();
+    InMemoryFilmStorage inMemoryFilmStorage;
+    FilmController filmController = new FilmController(inMemoryFilmStorage);
 
     @Test
     void getFilmTest() {
