@@ -1,18 +1,16 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Integer, Film> films = new HashMap<>();
@@ -40,7 +38,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         if (!films.containsKey(newFilm.getId())) {
             log.warn("Фильм с указанным id не найден");
-            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
         }
         validateFilm(newFilm);
         Film oldFilm = films.get(newFilm.getId());
@@ -50,6 +48,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
         log.info("Данные о фильме: {} обновлены", oldFilm);
         return oldFilm;
+    }
+
+    @Override
+    public Film findFilmById(int id) {
+        if (!films.containsKey(id)) {
+            throw new NotFoundException("Фильма с таким id не найдено");
+        }
+        return films.get(id);
     }
 
     private int getNextId() {
@@ -62,7 +68,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private void validateFilm(Film film) {
-        if (film.getDescription().length() > 200) {
+        if (film.getDescription() != null && film.getDescription().length() > 200) {
             log.warn("Ошибка лимита");
             throw new ValidationException("Описание превышает 200 символов");
         }
