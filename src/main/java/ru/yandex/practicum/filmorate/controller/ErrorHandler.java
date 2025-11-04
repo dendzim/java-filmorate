@@ -22,4 +22,10 @@ public class ErrorHandler {
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllOtherExceptions(Throwable e) {
+        return new ErrorResponse(e.getMessage());
+    }
 }
