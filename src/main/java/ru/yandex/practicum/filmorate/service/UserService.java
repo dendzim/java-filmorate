@@ -58,7 +58,7 @@ public class UserService {
 
     public Collection<User> getCommonFriendList(int id, int otherId) {
         User user1 = userStorage.findUserById(id);
-        User user2= userStorage.findUserById(otherId);
+        User user2 = userStorage.findUserById(otherId);
         List<User> list = new ArrayList<>();
         for (Integer userid : user1.getFriends()) {
             if (user2.getFriends().contains(userid)) {
