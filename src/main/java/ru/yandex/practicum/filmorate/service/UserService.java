@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -21,11 +23,13 @@ public class UserService {
 
     public void addFriend(int userId, int friendId) {
         if (userId == friendId) {
+            log.warn("Ошибка добавления в друзья");
             throw new ValidationException("Пользователь не может добавить сам себя в друзья");
         }
         User user = userStorage.findUserById(userId);
         User usersFriend = userStorage.findUserById(friendId);
         if (user.getFriends().contains(friendId)) {
+            log.warn("Ошибка добавления в друзья");
             throw new ValidationException("Пользователь уже добавлен в друзья");
         }
         user.getFriends().add(friendId);
@@ -34,7 +38,8 @@ public class UserService {
 
     public void deleteFriend(int userId, int friendId) {
         if (userId == friendId) {
-            throw new ValidationException("Пользователь не может добавить сам себя в друзья");
+            log.warn("Ошибка удаления из друзей");
+            throw new ValidationException("Пользователь не может удалить сам себя");
         }
         User user = userStorage.findUserById(userId);
         User usersFriend = userStorage.findUserById(friendId);

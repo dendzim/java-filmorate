@@ -19,7 +19,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        log.info("Список пользователей выведен");
         return users.values();
     }
 
@@ -47,7 +46,6 @@ public class InMemoryUserStorage implements UserStorage {
         oldUser.setName(newUser.getName());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setBirthday(newUser.getBirthday());
-        log.info("Данные о пользователе: {} обновлены", oldUser);
         return oldUser;
     }
 
@@ -62,6 +60,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     public User findUserById(int userId) {
         if (!users.containsKey(userId)) {
+            log.warn("Пользователь не найден");
             throw new NotFoundException("Пользователя с таким id не найдено");
         }
         return users.get(userId);

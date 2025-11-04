@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -27,25 +28,31 @@ public class FilmService {
     }
 
     public void addLike(int id, int userId) {
-        log.info("Добавление лайка фильму ID: {} от пользователя ID: {}", id, userId);
         Film film = filmStorage.findFilmById(id);
         userStorage.findUserById(userId);
-        film.likes.add(userId);
-        log.info("Лайк добавлен фильму '{}' от пользователя ID: {}", film.getName(), userId);
+        if (film.getLikes().contains(userId)) {
+            log.warn("Ошибка добавления лайка");
+            throw new ValidationException("Лайк от этого пользователя уже стоит");
+        }
+        film.getLikes().add(userId);
     }
 
     public void deleteLike(int id, int userId) {
         Film film = filmStorage.findFilmById(id);
         userStorage.findUserById(userId);
-        film.likes.remove(userId);
+        if (!film.getLikes().contains(userId)) {
+            log.warn("Ошибка удаления лайка");
+            throw new ValidationException("У фильма нет лайка от этого пользователя");
+        }
+        film.getLikes().remove(userId);
     }
 
     public Collection<Film> getPopular(int count) {
         return filmStorage.findAll().stream()
-                .sorted(comporator)
+                .sorted(comparator)
                 .limit(count)
                 .collect(Collectors.toList());
     }
 
-    public static final Comparator<Film> comporator = Comparator.comparingInt(Film::getRating).reversed();
+    public static final Comparator<Film> comparator = Comparator.comparingInt(Film::getRating).reversed();
 }

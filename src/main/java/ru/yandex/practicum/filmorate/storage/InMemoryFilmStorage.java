@@ -17,7 +17,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        log.info("Список фильмов выведен");
         return films.values();
     }
 
@@ -26,7 +25,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         validateFilm(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
-        log.info("Фильм: {} добавлен в базу", film);
         return film;
     }
 
@@ -46,7 +44,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         oldFilm.setDuration(newFilm.getDuration());
         oldFilm.setName(newFilm.getName());
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        log.info("Данные о фильме: {} обновлены", oldFilm);
         return oldFilm;
     }
 
