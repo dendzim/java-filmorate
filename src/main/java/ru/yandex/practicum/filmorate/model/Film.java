@@ -16,7 +16,10 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private int duration;
+    private Rating mpa;
     private Set<Integer> likes = new HashSet<>();
+    private Set<Integer> genres = new HashSet<>();
+
 
     public int getRating() {
         return likes.size();

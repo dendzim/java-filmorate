@@ -55,6 +55,31 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.get(id);
     }
 
+    @Override
+    public void remove(int id) {
+
+    }
+
+    @Override
+    public Collection<Film> getPopular(int count) {
+        return List.of();
+    }
+
+    @Override
+    public void addLike(int id, int userId) {
+
+    }
+
+    @Override
+    public void deleteLike(int id, int userId) {
+
+    }
+
+    @Override
+    public boolean contains(Integer id) {
+        return false;
+    }
+
     private int getNextId() {
         int currentMaxId = films.keySet()
                 .stream()

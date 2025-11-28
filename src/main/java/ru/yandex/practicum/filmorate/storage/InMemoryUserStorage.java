@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -64,6 +65,36 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Пользователя с таким id не найдено");
         }
         return users.get(userId);
+    }
+
+    @Override
+    public void remove(int id) {
+
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(int userId, int friendId) {
+
+    }
+
+    @Override
+    public Collection<User> getFriendList(int userId) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<User> getCommonFriendList(int id, int otherId) {
+        return List.of();
+    }
+
+    @Override
+    public boolean contains(Integer id) {
+        return false;
     }
 
     private void validateUser(User user) {

@@ -1,4 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+@Data
 public class Rating {
+    @NotNull
+    private Integer id;
+    private String name;
 }
