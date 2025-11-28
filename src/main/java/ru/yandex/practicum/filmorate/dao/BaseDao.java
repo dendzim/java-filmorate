@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.dao;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Optional;
 
+@Repository
 public abstract class BaseDao<T> {
     protected final JdbcTemplate jdbc;
     protected final RowMapper<T> mapper;

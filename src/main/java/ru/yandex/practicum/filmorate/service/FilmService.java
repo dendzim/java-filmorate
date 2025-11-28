@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -25,19 +26,15 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final GenreStorage genreStorage;
-    private final RatingStorage ratingStorage;
 
     @Autowired
     public FilmService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
                        @Qualifier("UserDbStorage") UserStorage userStorage,
-                       @Qualifier("GenreDbStorage") GenreStorage genreStorage,
-                       @Qualifier("RatingDbStorage") RatingStorage ratingStorage) {
+                       @Qualifier("GenreDbStorage") GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
-        this.ratingStorage = ratingStorage;
     }
-
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();

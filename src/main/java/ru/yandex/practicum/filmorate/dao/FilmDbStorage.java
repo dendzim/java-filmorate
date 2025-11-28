@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 import java.util.List;
 
+@Repository("FilmDbStorage")
 public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {

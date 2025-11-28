@@ -17,8 +17,8 @@ public class FilmController {
     private final FilmService service;
 
     @Autowired
-    public FilmController(FilmService filmService) {
-        this.service = filmService;
+    public FilmController(FilmService service) {
+        this.service = service;
     }
 
     @GetMapping

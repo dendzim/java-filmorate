@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
 
+@Repository("UserDbStorage")
 public class UserDbStorage extends BaseDao<User> implements UserStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM PUBLIC.\"Users\"";
