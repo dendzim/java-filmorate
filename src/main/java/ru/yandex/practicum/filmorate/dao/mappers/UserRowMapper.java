@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 @Component
-public class UserRawMapper implements RowMapper<User> {
+public class UserRowMapper implements RowMapper<User> {
 
     @Override
     public User mapRow(ResultSet resultSet, int rowNum) throws SQLException {
