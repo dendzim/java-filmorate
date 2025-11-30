@@ -4,14 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -78,22 +75,19 @@ public class FilmService {
 
     public void addLike(int id, int userId) {
         Film film = filmStorage.findFilmById(id);
-        userStorage.findUserById(userId);
-        if (film.getLikes().contains(userId)) {
-            log.warn("Ошибка добавления лайка");
-            throw new ValidationException("Лайк от этого пользователя уже стоит");
+        if (!userStorage.contains(userId)) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        film.getLikes().add(userId);
+        filmStorage.addLike(id, userId);
     }
 
     public void deleteLike(int id, int userId) {
         Film film = filmStorage.findFilmById(id);
         userStorage.findUserById(userId);
-        if (!film.getLikes().contains(userId)) {
-            log.warn("Ошибка удаления лайка");
-            throw new ValidationException("У фильма нет лайка от этого пользователя");
+        if (!userStorage.contains(userId)) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        film.getLikes().remove(userId);
+        filmStorage.deleteLike(id, userId);
     }
 
     public Collection<Film> getPopular(int count) {
@@ -124,5 +118,5 @@ public class FilmService {
         }
     }
 
-    public static final Comparator<Film> comparator = Comparator.comparingInt(Film::getRating).reversed();
+    public static final Comparator<Film> comparator = Comparator.comparingInt(Film::getAllLikes).reversed();
 }

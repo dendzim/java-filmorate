@@ -14,6 +14,4 @@ public interface GenreStorage {
     void addGenresToFilm(Film film);
 
     void updateFilmGenres(Film film);
-
-    boolean contains(Integer id);
 }

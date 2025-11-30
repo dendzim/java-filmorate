@@ -18,9 +18,9 @@ public interface FilmStorage {
 
     Collection<Film> getPopular(int count);
 
-    void addLike(int id, int userId);
+    Integer addLike(int id, int userId);
 
-    void deleteLike(int id, int userId);
+    Integer deleteLike(int id, int userId);
 
     boolean contains(Integer id);
 }

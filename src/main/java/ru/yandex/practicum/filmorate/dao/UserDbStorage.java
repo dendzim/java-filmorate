@@ -7,66 +7,93 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 @Repository("UserDbStorage")
 public class UserDbStorage extends BaseDao<User> implements UserStorage {
 
-    private static final String FIND_ALL_QUERY = "SELECT * FROM PUBLIC.\"Users\"";
-    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM PUBLIC.\"Users\" WHERE USER_ID = ?";
-    private static final String INSERT_QUERY = "INSERT INTO users(username, email, password, registration_date)" +
-            "VALUES (?, ?, ?, ?) returning id";
+    private static final String FIND_ALL_USERS_QUERY = "SELECT * FROM PUBLIC.\"Users\"";
+    private static final String FIND_USER_BY_ID_QUERY = "SELECT * FROM PUBLIC.\"Users\" WHERE USER_ID = ?";
+    private static final String INSERT_QUERY = "INSERT INTO PUBLIC.\"Users\"(NAME, EMAIL, LOGIN, BIRTHDAY)" +
+            "VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE PUBLIC.\"Users\" SET NAME = ?, EMAIL = ?, LOGIN = ?," +
+            "BIRTHDAY = ? WHERE USER_ID = ?";
+    private static final String DELETE_QUERY = "DELETE FROM PUBLIC.\"Users\" WHERE USER_ID = ?";
+    private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM PUBLIC.\"Users\" WHERE USER_ID = ?)";
+    private static final String ADD_FRIEND_QUERY = "INSERT INTO PUBLIC.\"User_friends\"(USER_ID, FRIEND_ID) " +
+            "VALUES (?, ?)";
+    private static final String DELETE_FRIEND_QUERY = "DELETE FROM PUBLIC.\"User_friends\" WHERE USER_ID = ? " +
+            "AND FRIEND_ID = ?";
+    private static final String FIND_ALL_FRIENDS_QUERY = "SELECT FRIEND_ID FROM PUBLIC.\"User_friends\" " +
+            "WHERE USER_ID = ?";
+    private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT T1.FRIEND_ID FROM PUBLIC.\"User_friends\" AS T1 " +
+            "JOIN PUBLIC.\"User_friends\" AS T2 ON T1.FRIEND_ID = T2.FRIEND_ID WHERE T1.USER_ID = ? AND T2.USER_ID = ?";
+
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
 
     @Override
     public Collection<User> findAll() {
-        return List.of();
+        return getAll(FIND_ALL_USERS_QUERY);
     }
 
     @Override
     public User create(User user) {
-        return null;
+        int id = insert(INSERT_QUERY,
+                user.getName(),
+                user.getEmail(),
+                user.getLogin(),
+                user.getBirthday()
+        );
+        user.setId(id);
+        return user;
     }
 
     @Override
-    public User update(User newUser) {
-        return null;
+    public User update(User user) {
+        update(UPDATE_QUERY,
+                user.getName(),
+                user.getEmail(),
+                user.getLogin(),
+                user.getBirthday(),
+                user.getId()
+        );
+        return user;
     }
 
     @Override
     public User findUserById(int id) {
-        return null;
+        return get(FIND_USER_BY_ID_QUERY);
     }
 
     @Override
     public void remove(int id) {
-
+        delete(DELETE_QUERY, id);
     }
 
     @Override
     public void addFriend(int userId, int friendId) {
-
+        jdbc.update(ADD_FRIEND_QUERY, userId, friendId);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
-
+        jdbc.update(DELETE_FRIEND_QUERY, userId, friendId);
     }
 
     @Override
-    public Collection<User> getFriendList(int userId) {
-        return List.of();
+    public Set<Integer> getFriendList(int userId) {
+        return Set.copyOf(jdbc.queryForList(FIND_ALL_FRIENDS_QUERY, Integer.class, userId));
     }
 
     @Override
-    public Collection<User> getCommonFriendList(int id, int otherId) {
-        return List.of();
+    public Set<Integer> getCommonFriendList(int id, int otherId) {
+        return Set.copyOf(jdbc.queryForList(FIND_COMMON_FRIENDS_QUERY, Integer.class, id, otherId));
     }
 
     @Override
     public boolean contains(Integer id) {
-        return false;
+        return jdbc.queryForObject(EXISTS, Boolean.class, id);
     }
 }

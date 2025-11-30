@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component("inMemoryUserStorage")
@@ -83,13 +80,13 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getFriendList(int userId) {
-        return List.of();
+    public Set<Integer> getFriendList(int userId) {
+        return Set.of();
     }
 
     @Override
-    public Collection<User> getCommonFriendList(int id, int otherId) {
-        return List.of();
+    public Set<Integer> getCommonFriendList(int id, int otherId) {
+        return Set.of();
     }
 
     @Override

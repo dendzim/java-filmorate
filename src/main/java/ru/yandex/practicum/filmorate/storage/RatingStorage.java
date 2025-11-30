@@ -8,7 +8,5 @@ public interface RatingStorage {
 
     Collection<Rating> findAll();
 
-    Rating findGenreById(int id);
-
-    boolean contains(Integer id);
+    Rating findRatingById(int id);
 }
