@@ -17,7 +17,6 @@ public class Film {
     private Integer likes = 0;
     private Set<Genre> genres = new HashSet<>();
 
-
     public int getAllLikes() {
         return likes;
     }

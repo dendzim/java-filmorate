@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.exception;
 
 public class InternalServerException extends Throwable {
-    public InternalServerException(String неУдалосьСохранитьДанные) {
+    public InternalServerException(String message) {
+        super(message);
     }
 }
