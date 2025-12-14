@@ -20,9 +20,9 @@ public interface UserStorage {
 
     void deleteFriend(int userId, int friendId);
 
-    Collection<Integer> getFriendList(int userId);
+    Collection<User> getFriendList(int userId);
 
-    Collection<Integer> getCommonFriendList(int id, int otherId);
+    Collection<User> getCommonFriendList(int id, int otherId);
 
     boolean contains(Integer id);
 }

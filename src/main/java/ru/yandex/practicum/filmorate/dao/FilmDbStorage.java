@@ -1,31 +1,70 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository("FilmDbStorage")
 public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
-    private static final String FIND_ALL_FILMS_QUERY = "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, " +
-            "f.DURATION, r.NAME AS RATING_NAME, GROUP_CONCAT(g.NAME) AS GENRES, COUNT(l.USER_ID) AS LIKES_COUNT " +
-            "FROM PUBLIC.\"Film\" f LEFT JOIN PUBLIC.\"Rating\" r ON f.RATING_ID = r.RATING_ID LEFT " +
-            "JOIN PUBLIC.\"Film_genre\" fg ON f.FILM_ID = fg.FILM_ID LEFT JOIN PUBLIC.\"Genre\" g " +
-            "ON fg.GENRE_ID = g.GENRE_ID LEFT JOIN PUBLIC.\"Likes\" l ON f.FILM_ID = l.FILM_ID";
-    private static final String INSERT_QUERY = "INSERT INTO PUBLIC.\"Film\" (NAME, DESCRIPTION, RELEASE_DATE, " +
-            "DURATION, RATING_ID) VALUES (?, ?, ?, ?, ?)";
-    private static final String GROUP_BY = "GROUP BY f.FILM_ID";
-    private static final String DELETE_QUERY = "DELETE FROM PUBLIC.\"Film\" WHERE FILM_ID = ?";
-    private static final String UPDATE_QUERY = "UPDATE PUBLIC.\"Film\" SET NAME = :NAME, DESCRIPTION = :DESCRIPTION, " +
-            "RELEASE_DATE = :RELEASE_DATE, DURATION = :DURATION, RATING_ID = :RATING_ID WHERE FILM_ID = :FILM_ID";
-    private static final String EXISTS_QUERY = "SELECT EXISTS(SELECT 1 FROM PUBLIC.\"Film\" WHERE FILM_ID = ?)";
+    private static final String SELECT_ALL_FIELDS = """
+            SELECT f.*,
+            COUNT(l.film_id) AS likes,
+            r.mpa_id,
+            r.name AS mpa_name,
+            ARRAY_AGG(g.genre_id) AS genre_ids,
+            ARRAY_AGG(g.name) AS genre_names
+            """;
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    private static final String JOIN_ALL_TABLES = """
+            FROM films AS f
+            LEFT JOIN mpa AS r ON f.mpa_id = r.mpa_id
+            LEFT JOIN likes AS l ON f.film_id = l.film_id
+            LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id
+            LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+            """;
+
+    private static final String GROUP_BY = "GROUP BY f.film_id";
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO films (name, description, release_date, duration, mpa_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
+
+    private static final String UPDATE_QUERY = """
+            UPDATE films SET
+            name = ?,
+            description = ?,
+            release_date = ?,
+            duration = ?,
+            mpa_id = ?
+            WHERE film_id = ?
+            """;
+
+    private static final String EXISTS_QUERY = "SELECT EXISTS(SELECT 1 FROM films WHERE film_id = ?)";
+
+    private static final String FIND_FILM_BY_ID_QUERY = String.format("%s %s WHERE f.film_id = ? %s",
+            SELECT_ALL_FIELDS, JOIN_ALL_TABLES, GROUP_BY);
+
+    private static final String FIND_ALL_FILMS_QUERY = String.format("%s %s %s",
+            SELECT_ALL_FIELDS, JOIN_ALL_TABLES, GROUP_BY);
+
+    private final GenreDbStorage genreDbStorage;
+    private final RatingStorage ratingStorage;
+    public FilmDbStorage(JdbcTemplate jdbc, FilmRowMapper mapper, GenreDbStorage genreDbStorage, RatingStorage ratingStorage) {
         super(jdbc, mapper);
+        this.genreDbStorage = genreDbStorage;
+        this.ratingStorage = ratingStorage;
     }
 
     @Override
@@ -35,26 +74,40 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        int id = insert(
-                INSERT_QUERY,
+        if (ratingStorage.findRatingById(film.getMpa().getId()).isEmpty()) {
+            throw new NotFoundException("Рейтинг с таким id " + film.getMpa().getId() + " не найден");
+        }
+
+        Set<Integer> ids = genreDbStorage.findAll().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        for (Genre genre : film.getGenres()) {
+            if (!ids.contains(genre.getId())) {
+                throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
+            }
+        }
+
+        int id = insert(INSERT_QUERY,
                 film.getName(),
                 film.getDescription(),
-                film.getDuration(),
                 film.getReleaseDate(),
-                film.getMpa()
+                film.getDuration(),
+                film.getMpa().getId()
         );
         film.setId(id);
+
         return film;
     }
 
     @Override
     public Film update(Film film) {
-        update(INSERT_QUERY,
+        update(UPDATE_QUERY,
                 film.getName(),
                 film.getDescription(),
-                film.getDuration(),
                 film.getReleaseDate(),
-                film.getMpa(),
+                film.getDuration(),
+                film.getMpa().getId(),
                 film.getId()
         );
         return film;
@@ -62,23 +115,26 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Film findFilmById(int id) {
-        return get(FIND_ALL_FILMS_QUERY + " WHERE f.FILM_ID = ?", id);
+        return get(FIND_FILM_BY_ID_QUERY, id);
+
     }
 
     @Override
-    public void remove(int id) {
+    public Film remove(int id) {
+        Film film = findFilmById(id);
         delete(DELETE_QUERY, id);
+        return film;
     }
 
     @Override
     public Collection<Film> getPopular(int count) {
-        return jdbc.query(FIND_ALL_FILMS_QUERY + " ORDER BY PUBLIC.\"Likes\" DESC LIMIT ?", mapper, count);
+        return jdbc.query(FIND_ALL_FILMS_QUERY + " ORDER BY likes DESC LIMIT ?", mapper, count);
     }
 
     @Override
     public Integer addLike(int id, int userId) {
-        String INSERT_QUERY = "INSERT INTO PUBLIC.\"Likes\"(FILM_ID, USER_ID) VALUES(?, ?)";
-        String COUNT_QUERY = "SELECT COUNT(*) FROM PUBLIC.\"Likes\" WHERE film_id = ?";
+        String INSERT_QUERY = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
+        String COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ?";
         jdbc.update(INSERT_QUERY, id, userId);
 
         return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
@@ -86,9 +142,9 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Integer deleteLike(int id, int userId) {
-        String DELETE_QUERY = "DELETE FROM PUBLIC.\"Likes\" WHERE USER_ID = ?";
-        String COUNT_QUERY = "SELECT COUNT(*) FROM PUBLIC.\"Likes\" WHERE FILM_ID = ?";
-        jdbc.update(DELETE_QUERY, userId);
+        String DELETE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        String COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ?";
+        jdbc.update(DELETE_QUERY,id, userId);
 
         return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
     }

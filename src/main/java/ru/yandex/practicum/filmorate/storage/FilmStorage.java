@@ -14,7 +14,7 @@ public interface FilmStorage {
 
     Film findFilmById(int id);
 
-    void remove(int id);
+    Film remove(int id);
 
     Collection<Film> getPopular(int count);
 

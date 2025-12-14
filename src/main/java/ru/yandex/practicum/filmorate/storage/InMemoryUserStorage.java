@@ -80,12 +80,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<Integer> getFriendList(int userId) {
+    public Set<User> getFriendList(int userId) {
         return Set.of();
     }
 
     @Override
-    public Set<Integer> getCommonFriendList(int id, int otherId) {
+    public Set<User> getCommonFriendList(int id, int otherId) {
         return Set.of();
     }
 

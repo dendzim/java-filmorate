@@ -1,18 +1,18 @@
-DELETE FROM PUBLIC."Rating";
-DELETE FROM PUBLIC."Genre";
+DELETE FROM mpa;
+DELETE FROM genres;
 
-ALTER TABLE PUBLIC."Genre" ALTER COLUMN GENRE_ID RESTART WITH 1;
-ALTER TABLE PUBLIC."Rating" ALTER COLUMN RATING_ID RESTART WITH 1;
+ALTER TABLE genres ALTER COLUMN genre_id RESTART WITH 1;
+ALTER TABLE mpa ALTER COLUMN mpa_id RESTART WITH 1;
 
-INSERT INTO PUBLIC."Genre" (NAME) VALUES
-('Ужасы'),
-('Триллер'),
+INSERT INTO genres (name) VALUES
 ('Комедия'),
 ('Драма'),
-('Фантастика'),
+('Мультфильм'),
+('Триллер'),
+('Документальный'),
 ('Боевик');
 
-INSERT INTO PUBLIC."Rating" (NAME) VALUES
+INSERT INTO mpa (name) VALUES
 ('G'),
 ('PG'),
 ('PG-13'),

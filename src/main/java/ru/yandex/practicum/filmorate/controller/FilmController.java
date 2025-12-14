@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 
@@ -52,14 +51,14 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public Film addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Фильму с id: {} поставил лайк пользователь с id: {}", id, userId);
-        service.addLike(id, userId);
+        return service.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
+    public Film deleteLike(@PathVariable int id, @PathVariable int userId) {
         log.info("У фильма с id: {} убрал лайк пользователь с id: {}", id, userId);
-        service.deleteLike(id, userId);
+        return service.deleteLike(id, userId);
     }
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
@@ -9,14 +10,17 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public abstract class BaseDao<T> {
     protected final JdbcTemplate jdbc;
+    protected final NamedParameterJdbcTemplate namedJdbc;
     protected final RowMapper<T> mapper;
 
     public BaseDao(JdbcTemplate jdbc, RowMapper<T> mapper) {
         this.jdbc = jdbc;
+        this.namedJdbc = new NamedParameterJdbcTemplate(jdbc);
         this.mapper = mapper;
     }
 
@@ -41,6 +45,10 @@ public abstract class BaseDao<T> {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void update(String sql, Map<String, Object> map) {
+        namedJdbc.update(sql, map);
     }
 
     public int insert(String query, Object... params) {

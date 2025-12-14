@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
@@ -20,6 +21,7 @@ public class RatingService {
     }
 
     public Rating findRatingById(int id) {
-        return ratingStorage.findRatingById(id);
+        return ratingStorage.findRatingById(id)
+                .orElseThrow(() -> new NotFoundException("Mpa с id = " + id + " не найден"));
     }
 }

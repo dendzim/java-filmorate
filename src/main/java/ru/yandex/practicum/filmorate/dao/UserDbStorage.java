@@ -1,36 +1,66 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Repository("UserDbStorage")
 public class UserDbStorage extends BaseDao<User> implements UserStorage {
 
-    private static final String FIND_ALL_USERS_QUERY = "SELECT * FROM PUBLIC.\"Users\"";
-    private static final String FIND_USER_BY_ID_QUERY = "SELECT * FROM PUBLIC.\"Users\" WHERE USER_ID = ?";
-    private static final String INSERT_QUERY = "INSERT INTO PUBLIC.\"Users\"(NAME, EMAIL, LOGIN, BIRTHDAY)" +
-            "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE PUBLIC.\"Users\" SET NAME = ?, EMAIL = ?, LOGIN = ?," +
-            "BIRTHDAY = ? WHERE USER_ID = ?";
-    private static final String DELETE_QUERY = "DELETE FROM PUBLIC.\"Users\" WHERE USER_ID = ?";
-    private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM PUBLIC.\"Users\" WHERE USER_ID = ?)";
-    private static final String ADD_FRIEND_QUERY = "INSERT INTO PUBLIC.\"User_friends\"(USER_ID, FRIEND_ID) " +
-            "VALUES (?, ?)";
-    private static final String DELETE_FRIEND_QUERY = "DELETE FROM PUBLIC.\"User_friends\" WHERE USER_ID = ? " +
-            "AND FRIEND_ID = ?";
-    private static final String FIND_ALL_FRIENDS_QUERY = "SELECT FRIEND_ID FROM PUBLIC.\"User_friends\" " +
-            "WHERE USER_ID = ?";
-    private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT T1.FRIEND_ID FROM PUBLIC.\"User_friends\" AS T1 " +
-            "JOIN PUBLIC.\"User_friends\" AS T2 ON T1.FRIEND_ID = T2.FRIEND_ID WHERE T1.USER_ID = ? AND T2.USER_ID = ?";
+    private static final String FIND_ALL_USERS_QUERY = "SELECT * FROM users";
 
-    public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
+    private static final String FIND_USER_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO users (name, email, login, birthday)
+            VALUES (?, ?, ?, ?)
+            """;
+
+    private static final String UPDATE_QUERY = """
+            UPDATE users SET
+            name = ?,
+            email = ?,
+            login = ?,
+            birthday = ?
+            WHERE user_id = ?
+            """;
+
+    private static final String DELETE_QUERY = "DELETE FROM users WHERE user_id = ?";
+
+    private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?)";
+
+    private static final String ADD_FRIEND_QUERY = """
+            INSERT INTO user_friends (user_id, friend_id)
+            VALUES (?, ?)
+            """;
+
+    private static final String DELETE_FRIEND_QUERY = "DELETE FROM user_friends WHERE user_id = ? AND friend_id = ?";
+
+    private static final String FIND_ALL_FRIENDS_QUERY = "SELECT friend_id FROM user_friends WHERE user_id = ?";
+
+    private static final String FIND_COMMON_FRIENDS_QUERY = """
+            SELECT T1.friend_id
+            FROM user_friends AS T1
+            JOIN user_friends AS T2 ON T1.friend_id = T2.friend_id
+            WHERE T1.user_id = ? AND T2.user_id = ?
+            """;
+
+    private static final String SELECT_ALL_FROM_COLLECTION = "SELECT * FROM users WHERE user_id IN (:set)";
+
+    protected final NamedParameterJdbcTemplate namedJdbc;
+
+    public UserDbStorage(JdbcTemplate jdbc, UserRowMapper mapper, NamedParameterJdbcTemplate namedJdbc) {
         super(jdbc, mapper);
+
+        this.namedJdbc = namedJdbc;
     }
 
     @Override
@@ -64,7 +94,7 @@ public class UserDbStorage extends BaseDao<User> implements UserStorage {
 
     @Override
     public User findUserById(int id) {
-        return get(FIND_USER_BY_ID_QUERY);
+        return get(FIND_USER_BY_ID_QUERY, id);
     }
 
     @Override
@@ -83,13 +113,21 @@ public class UserDbStorage extends BaseDao<User> implements UserStorage {
     }
 
     @Override
-    public Set<Integer> getFriendList(int userId) {
-        return Set.copyOf(jdbc.queryForList(FIND_ALL_FRIENDS_QUERY, Integer.class, userId));
+    public List<User> getFriendList(int userId) {
+        Set<Integer> list = Set.copyOf(jdbc.queryForList(FIND_ALL_FRIENDS_QUERY, Integer.class, userId));
+         if (list.isEmpty()) {
+             return Collections.emptyList();
+         }
+        return namedJdbc.query(SELECT_ALL_FROM_COLLECTION, Collections.singletonMap("set", list), mapper);
     }
 
     @Override
-    public Set<Integer> getCommonFriendList(int id, int otherId) {
-        return Set.copyOf(jdbc.queryForList(FIND_COMMON_FRIENDS_QUERY, Integer.class, id, otherId));
+    public List<User> getCommonFriendList(int id, int otherId) {
+        Set<Integer> list = Set.copyOf(jdbc.queryForList(FIND_COMMON_FRIENDS_QUERY, Integer.class, id, otherId));
+        if (list.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return namedJdbc.query(SELECT_ALL_FROM_COLLECTION, Collections.singletonMap("set", list), mapper);
     }
 
     @Override

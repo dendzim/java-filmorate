@@ -18,11 +18,11 @@ public class FilmRowMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
-        film.setId(resultSet.getInt("FILM_ID"));
-        film.setName(resultSet.getString("NAME"));
-        film.setDescription(resultSet.getString("DESCRIPTION"));
-        film.setDuration(resultSet.getInt("DURATION"));
-        film.setReleaseDate(resultSet.getDate("RELEASE_DATE").toLocalDate());
+        film.setId(resultSet.getInt("film_id"));
+        film.setName(resultSet.getString("name"));
+        film.setDescription(resultSet.getString("description"));
+        film.setDuration(resultSet.getInt("duration"));
+        film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
 
         mapRating(film, resultSet);
         mapGenres(film, resultSet);
@@ -30,26 +30,31 @@ public class FilmRowMapper implements RowMapper<Film> {
     }
 
     private void mapRating(Film film, ResultSet resultSet) throws SQLException {
-        int mpaId = resultSet.getInt("RATING_ID");
+        int ratigId = resultSet.getInt("mpa_id");
         if (!resultSet.wasNull()) {
-            String ratingName = resultSet.getString("NAME");
-            film.setMpa(new Rating(mpaId, ratingName));
+            String ratingName = resultSet.getString("mpa_name");
+            film.setMpa(new Rating(ratigId, ratingName));
         }
     }
 
     private void mapGenres(Film film, ResultSet resultSet) throws SQLException {
-        Set<Genre> genres = new HashSet<>();
-        Array genresId = resultSet.getArray("GENRE_ID");
+        Array genresId = resultSet.getArray("genre_ids");
         if (resultSet.wasNull()) {
             return;
         }
-        Array genresName = resultSet.getArray("NAME");
-        Integer[] ids = (Integer[]) genresId.getArray();
-        String[] names = (String[]) genresName.getArray();
+        Array genresName = resultSet.getArray("genre_names");
+
+        if (genresName == null) {
+            return;
+        }
+
+        Object[] ids = (Object[]) genresId.getArray();
+        Object[] names = (Object[]) genresName.getArray();
+        Set<Genre> genres = new HashSet<>();
         for (int i = 0; i < ids.length; i++) {
             if (ids[i] != null && names[i] != null) {
-                Integer id = ids[i];
-                String name = names[i];
+                Integer id = ((Number)ids[i]).intValue();
+                 String name = names[i].toString();
                 genres.add(new Genre(id, name));
             }
         }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -13,11 +14,10 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional
 public class FilmService {
 
     private final FilmStorage filmStorage;
@@ -48,15 +48,10 @@ public class FilmService {
 
     public Film update(Film newFilm) {
         if (newFilm.getId() == null) {
-            log.warn("Не указан id");
-            throw new ValidationException("Id должен быть указан");
+            throw new NotFoundException("Фильм не найден");
         }
         validateFilm(newFilm);
-        Film oldFilm = filmStorage.update(newFilm);
-        if (oldFilm.getGenres() != null && !oldFilm.getGenres().isEmpty()) {
-            genreStorage.updateFilmGenres(oldFilm);
-        }
-        return oldFilm;
+        return filmStorage.update(newFilm);
     }
 
     public Film findFilmById(int id) {
@@ -73,28 +68,30 @@ public class FilmService {
         filmStorage.remove(id);
     }
 
-    public void addLike(int id, int userId) {
-        Film film = filmStorage.findFilmById(id);
+    public Film addLike(int id, int userId) {
+        if (!filmStorage.contains(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
         if (!userStorage.contains(userId)) {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
         filmStorage.addLike(id, userId);
+        return filmStorage.findFilmById(id);
     }
 
-    public void deleteLike(int id, int userId) {
-        Film film = filmStorage.findFilmById(id);
-        userStorage.findUserById(userId);
+    public Film deleteLike(int id, int userId) {
+        if (!filmStorage.contains(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
         if (!userStorage.contains(userId)) {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
         filmStorage.deleteLike(id, userId);
+        return filmStorage.findFilmById(id);
     }
 
     public Collection<Film> getPopular(int count) {
-        return filmStorage.findAll().stream()
-                .sorted(comparator)
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopular(count);
     }
 
     private void validateFilm(Film film) {
@@ -117,6 +114,4 @@ public class FilmService {
             throw new ValidationException("Длительность не может быть меньше 1");
         }
     }
-
-    public static final Comparator<Film> comparator = Comparator.comparingInt(Film::getAllLikes).reversed();
 }
