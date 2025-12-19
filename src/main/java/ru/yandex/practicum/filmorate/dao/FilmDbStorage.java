@@ -61,7 +61,9 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     private final GenreDbStorage genreDbStorage;
     private final RatingStorage ratingStorage;
-    public FilmDbStorage(JdbcTemplate jdbc, FilmRowMapper mapper, GenreDbStorage genreDbStorage, RatingStorage ratingStorage) {
+
+    public FilmDbStorage(JdbcTemplate jdbc, FilmRowMapper mapper, GenreDbStorage genreDbStorage,
+                         RatingStorage ratingStorage) {
         super(jdbc, mapper);
         this.genreDbStorage = genreDbStorage;
         this.ratingStorage = ratingStorage;
@@ -133,20 +135,20 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Integer addLike(int id, int userId) {
-        String INSERT_QUERY = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
-        String COUNT_QUERY = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
-        jdbc.update(INSERT_QUERY, id, userId);
+        String insert = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
+        String count = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
+        jdbc.update(insert, id, userId);
 
-        return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
+        return jdbc.queryForObject(count, Integer.class, id);
     }
 
     @Override
     public Integer deleteLike(int id, int userId) {
-        String DELETE_QUERY = "DELETE FROM likes WHERE user_id = ?";
-        String COUNT_QUERY = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
-        jdbc.update(DELETE_QUERY, userId);
+        String delete = "DELETE FROM likes WHERE user_id = ?";
+        String count = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
+        jdbc.update(delete, userId);
 
-        return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
+        return jdbc.queryForObject(count, Integer.class, id);
     }
 
     @Override
