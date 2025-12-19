@@ -17,7 +17,7 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     private static final String SELECT_ALL_FIELDS = """
             SELECT f.*,
-            COUNT(l.film_id) AS likes,
+            COUNT(DISTINCT l.user_id) AS likes,
             r.mpa_id,
             r.name AS mpa_name,
             ARRAY_AGG(g.genre_id) AS genre_ids,
@@ -68,7 +68,7 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findAll() {
+    public List<Film> findAll() {
         return getAll(FIND_ALL_FILMS_QUERY);
     }
 
@@ -127,14 +127,14 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getPopular(int count) {
+    public List<Film> getPopular(int count) {
         return jdbc.query(FIND_ALL_FILMS_QUERY + " ORDER BY likes DESC LIMIT ?", mapper, count);
     }
 
     @Override
     public Integer addLike(int id, int userId) {
         String INSERT_QUERY = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
-        String COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ?";
+        String COUNT_QUERY = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
         jdbc.update(INSERT_QUERY, id, userId);
 
         return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
@@ -142,9 +142,9 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Integer deleteLike(int id, int userId) {
-        String DELETE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
-        String COUNT_QUERY = "SELECT COUNT(*) FROM likes WHERE film_id = ?";
-        jdbc.update(DELETE_QUERY,id, userId);
+        String DELETE_QUERY = "DELETE FROM likes WHERE user_id = ?";
+        String COUNT_QUERY = "SELECT COUNT(DISTINCT user_id) FROM likes WHERE film_id = ?";
+        jdbc.update(DELETE_QUERY, userId);
 
         return jdbc.queryForObject(COUNT_QUERY, Integer.class, id);
     }

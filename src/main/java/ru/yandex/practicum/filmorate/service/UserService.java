@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -80,7 +80,6 @@ public class UserService {
         }
     }
 
-    @Transactional
     public void addFriend(int userId, int friendId) {
         if (!userStorage.contains(userId)) {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
@@ -91,7 +90,6 @@ public class UserService {
         userStorage.addFriend(userId, friendId);
     }
 
-    @Transactional
     public void deleteFriend(int userId, int friendId) {
         if (userId == friendId) {
             log.warn("Ошибка удаления из друзей");

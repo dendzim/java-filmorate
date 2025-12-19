@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +63,7 @@ public class UserDbStorage extends BaseDao<User> implements UserStorage {
     }
 
     @Override
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         return getAll(FIND_ALL_USERS_QUERY);
     }
 

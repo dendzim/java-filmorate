@@ -75,8 +75,10 @@ public class FilmService {
         if (!userStorage.contains(userId)) {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        filmStorage.addLike(id, userId);
-        return filmStorage.findFilmById(id);
+        Integer likes = filmStorage.addLike(id, userId);
+        Film film = filmStorage.findFilmById(id);
+        film.setLikes(likes);
+        return film;
     }
 
     public Film deleteLike(int id, int userId) {
@@ -86,8 +88,10 @@ public class FilmService {
         if (!userStorage.contains(userId)) {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
-        filmStorage.deleteLike(id, userId);
-        return filmStorage.findFilmById(id);
+        Integer likes = filmStorage.deleteLike(id, userId);
+        Film film = filmStorage.findFilmById(id);
+        film.setLikes(likes);
+        return film;
     }
 
     public Collection<Film> getPopular(int count) {

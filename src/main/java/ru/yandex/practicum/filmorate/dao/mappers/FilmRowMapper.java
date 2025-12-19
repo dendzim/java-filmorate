@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,9 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setName(resultSet.getString("name"));
         film.setDescription(resultSet.getString("description"));
         film.setDuration(resultSet.getInt("duration"));
-        film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
+        film.setLikes(resultSet.getInt("likes"));
+        LocalDate release_date = resultSet.getObject("release_date", LocalDate.class);
+        film.setReleaseDate(release_date);
 
         mapRating(film, resultSet);
         mapGenres(film, resultSet);
@@ -43,11 +46,9 @@ public class FilmRowMapper implements RowMapper<Film> {
             return;
         }
         Array genresName = resultSet.getArray("genre_names");
-
         if (genresName == null) {
             return;
         }
-
         Object[] ids = (Object[]) genresId.getArray();
         Object[] names = (Object[]) genresName.getArray();
         Set<Genre> genres = new HashSet<>();

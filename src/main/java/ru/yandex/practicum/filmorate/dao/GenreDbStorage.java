@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,7 @@ public class GenreDbStorage extends BaseDao<Genre> implements GenreStorage {
     }
 
     @Override
-    public Collection<Genre> findAll() {
+    public List<Genre> findAll() {
         return getAll(FIND_ALL_QUERY);
     }
 

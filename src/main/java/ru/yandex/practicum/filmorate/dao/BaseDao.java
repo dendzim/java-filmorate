@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public abstract class BaseDao<T> {
@@ -45,10 +44,6 @@ public abstract class BaseDao<T> {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public void update(String sql, Map<String, Object> map) {
-        namedJdbc.update(sql, map);
     }
 
     public int insert(String query, Object... params) {
