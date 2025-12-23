@@ -1,7 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.exception.ReleaseDate;
+
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -9,13 +13,16 @@ import java.util.Set;
 
 @Data
 public class Film {
+
     private Integer id;
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
+    @Size(max = 200, message = "Описание превышает 200 символов")
     private String description;
+    @ReleaseDate
     private LocalDate releaseDate;
+    @Positive
     private int duration;
     private Rating mpa;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer likes = 0;
     private Set<Genre> genres = new HashSet<>();
 }

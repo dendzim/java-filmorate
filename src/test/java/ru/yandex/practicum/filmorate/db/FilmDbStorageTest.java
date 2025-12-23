@@ -80,8 +80,8 @@ public class FilmDbStorageTest {
     @Test
     public void testGetPopular() {
         List<Film> popular = filmDbStorage.getPopular(3);
-        assertEquals(5, popular.get(0).getLikes());
-        assertEquals(3, popular.get(1).getLikes());
+        assertEquals(popular.get(0), filmDbStorage.findFilmById(3));
+        assertEquals(popular.get(1), filmDbStorage.findFilmById(2));
     }
 
     @Test

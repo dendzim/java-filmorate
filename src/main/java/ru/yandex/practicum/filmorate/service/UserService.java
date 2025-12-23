@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
 
 @Slf4j
@@ -28,7 +27,9 @@ public class UserService {
     }
 
     public User create(User user) {
-        validateUser(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         user = userStorage.create(user);
         return user;
     }
@@ -41,7 +42,6 @@ public class UserService {
         if (!userStorage.contains(newUser.getId())) {
             throw new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден");
         }
-        validateUser(newUser);
         return userStorage.update(newUser);
     }
 
@@ -59,25 +59,6 @@ public class UserService {
             throw new NotFoundException("Пользователя с таким id не найдено");
         }
         userStorage.remove(id);
-    }
-
-    private void validateUser(User user) {
-        if (!user.getEmail().contains("@")) {
-            log.warn("Ошибка в формате почты");
-            throw new ValidationException("Неверная почта");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка в дате рождения");
-            throw new ValidationException("Неверная дата рождения");
-        }
-        if (user.getLogin().contains(" ")) {
-            log.warn("Ошибка в формате логина");
-            throw new ValidationException("Неправильный формат логина");
-        }
-        if (user.getName() == null || user.getName().trim().isEmpty()) {
-            log.info("Пустое имя пользователя заменено на логин");
-            user.setName(user.getLogin());
-        }
     }
 
     public void addFriend(int userId, int friendId) {

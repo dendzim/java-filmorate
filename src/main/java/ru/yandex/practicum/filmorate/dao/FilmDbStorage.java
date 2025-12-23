@@ -3,14 +3,11 @@ package ru.yandex.practicum.filmorate.dao;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository("FilmDbStorage")
 public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
@@ -76,19 +73,6 @@ public class FilmDbStorage extends BaseDao<Film> implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        if (ratingStorage.findRatingById(film.getMpa().getId()).isEmpty()) {
-            throw new NotFoundException("Рейтинг с таким id " + film.getMpa().getId() + " не найден");
-        }
-
-        Set<Integer> ids = genreDbStorage.findAll().stream()
-                .map(Genre::getId)
-                .collect(Collectors.toSet());
-
-        for (Genre genre : film.getGenres()) {
-            if (!ids.contains(genre.getId())) {
-                throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
-            }
-        }
 
         int id = insert(INSERT_QUERY,
                 film.getName(),

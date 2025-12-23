@@ -23,7 +23,6 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setName(resultSet.getString("name"));
         film.setDescription(resultSet.getString("description"));
         film.setDuration(resultSet.getInt("duration"));
-        film.setLikes(resultSet.getInt("likes"));
         LocalDate releaseDate = resultSet.getObject("release_date", LocalDate.class);
         film.setReleaseDate(releaseDate);
 
@@ -33,10 +32,10 @@ public class FilmRowMapper implements RowMapper<Film> {
     }
 
     private void mapRating(Film film, ResultSet resultSet) throws SQLException {
-        int ratigId = resultSet.getInt("mpa_id");
+        int ratingId = resultSet.getInt("mpa_id");
         if (!resultSet.wasNull()) {
             String ratingName = resultSet.getString("mpa_name");
-            film.setMpa(new Rating(ratigId, ratingName));
+            film.setMpa(new Rating(ratingId, ratingName));
         }
     }
 
