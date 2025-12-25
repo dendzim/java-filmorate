@@ -13,4 +13,14 @@ public interface FilmStorage {
     Film update(Film newFilm);
 
     Film findFilmById(int id);
+
+    Film remove(int id);
+
+    Collection<Film> getPopular(int count);
+
+    Integer addLike(int id, int userId);
+
+    Integer deleteLike(int id, int userId);
+
+    boolean contains(Integer id);
 }
